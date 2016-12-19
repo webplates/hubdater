@@ -40,7 +40,7 @@ type JwtAuthenticator struct {
 
 type ApiError struct {
 	Caller string
-	Code int
+	Code   int
 	Detail string `json:"detail"`
 }
 
@@ -166,7 +166,7 @@ func (c *Client) ParseError(caller string, resp *http.Response) error {
 
 	err := &ApiError{
 		Caller: caller,
-		Code: resp.StatusCode,
+		Code:   resp.StatusCode,
 	}
 
 	decoder.Decode(&err)
