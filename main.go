@@ -1,9 +1,7 @@
 package main
 
-// import "fmt"
-// import "os"
-// import "github.com/webplates/hubdater/api"
+import "github.com/webplates/hubdater/cmd"
 
 func main() {
-
+	cmd.Execute()
 }

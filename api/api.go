@@ -48,7 +48,7 @@ func (e *ApiError) Error() string {
 	return fmt.Sprintf("Cannot %s [%d]: %s", e.Caller, e.Code, e.Detail)
 }
 
-func NewClient(httpClient *http.Client, authenticator *Authenticator) *Client {
+func NewClient(httpClient *http.Client, authenticator Authenticator) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
@@ -57,6 +57,7 @@ func NewClient(httpClient *http.Client, authenticator *Authenticator) *Client {
 
 	client := &Client{
 		httpClient: httpClient,
+		authenticator: authenticator,
 		BaseURL:    baseURL,
 		UserAgent:  userAgent,
 	}
@@ -118,7 +119,7 @@ func (c *Client) Do(req *http.Request, result interface{}) (*http.Response, erro
 	return resp, nil
 }
 
-func (c *Client) Login(username string, password string) error {
+func (c *Client) Login(username string, password string) (string, error) {
 	body := map[string]string{
 		"username": username,
 		"password": password,
@@ -126,23 +127,21 @@ func (c *Client) Login(username string, password string) error {
 
 	req, err := c.NewRequest("POST", "users/login", body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	b := make(map[string]string)
 
 	resp, err := c.Do(req, &b)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if resp.StatusCode != 200 {
-		return c.ParseError(fmt.Sprintf("login as %s", username), resp)
+		return "", c.ParseError(fmt.Sprintf("login as %s", username), resp)
 	}
 
-	c.authenticator = &JwtAuthenticator{Token: b["token"]}
-
-	return nil
+	return b["token"], nil
 }
 
 func (c *Client) Authenticate(req *http.Request) error {
